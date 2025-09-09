@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>King of Diamonds Game</title>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            align-items: center;
+            background: linear-gradient(to bottom right, #2c3e50, #3498db);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #bottomContainer {
+            position: absolute;
+            left: 50%;
+            bottom: 0px;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+       #selected {
+            font-size: 1.2em;
+            position: absolute;
+            bottom: 150px;
+            color: white;
+            white-space: nowrap;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 3em;
+        }
+
+        #joinScreen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #popup {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #gridContainer {
+            background-color: rgb(0, 0, 0);
+            padding: 20px;
+            border-radius: 12px;
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            grid-template-rows: repeat(11, 50px);
+            gap: 5px;
+        }
+
+        #waitingForPlayers {
+            position: absolute;
+            top: 300px;         /* distance from top */
+            left: 50%;         /* center horizontally */
+            transform: translateX(-50%); /* truly center */
+            font-size: 1.2em;
+            text-align: center;
+        }
+
+        #countdownTimer {
+            display: none;
+            top: 300px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+
+        .cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            color: rgb(0, 0, 0);
+        }
+   
+        .player {
+            position: absolute;
+            padding: 6px 20px; /* balanced space left/right */
+            border-radius: 20px;
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .player.eliminated {
+            background-image: url("https://images.vexels.com/media/users/3/340644/isolated/preview/e582116e90ff33f47a38ba20aaf82ecc-red-x-in-a-circle.png");
+            background-size: cover;
+            opacity: 0.5;
+            text-decoration: line-through;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+
+        .cell.clicked { background: #add8e6; cursor: default; }
+        #closePopup { margin-top: 10px; }
+
+        h1 { text-align: center; margin-top: 20px; font-size: 3em; }
+        #players { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        
+        #chooseNumberBtn {
+            margin-bottom: 20px;
+            width: 700px;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            background: #554948;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #pickNumText {
+            display: none; 
+            margin-top: 300px; 
+        }
+
+        #startRoundBtn {
+            position: absolute;
+            bottom: 350px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3em;
+            cursor: pointer;  
+            display: none; 
+            width: auto;
+            text-align: center;
+            background: #c0392b; 
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        #eliminations {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            justify-content: center;
+            background: rgba(255,0,0,0.2);
+            padding: 8px 12px;
+            border-radius: 6px;
+            max-width: 200px;
+            text-align: center;
+        }
+
+        #announceElimination {
+            position: absolute;
+            top: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        #winner { margin-top: 20px; font-size: 1.5em; text-shadow: 2px 2px 4px black; }
+    </style>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div id="joinScreen">
+        <h1>King of Diamonds</h1>
+        <h2>Enter your name to join:</h2>
+        <input type="text" id="playerNameInput" placeholder="Your name">
+        <button id="joinBtn">Join Game</button>
+    </div>
+
+    <div id="gameScreen" style="display: none;">
+        <div id="eliminations" style="display:none;"></div>
+        <h1 id="countdownTimer"></h1>
+        <h2 id="waitingForPlayers"></h2>
+        <h2 id="announceElimination" style="display:none;"></h2>
+        <div id="players">
+            <div id="p1" class="player">
+                <div class="playerName"></div>
+                <div class="status"></div>
+                <div class="playerScore"></div>
+            </div>
+            <div id="p2" class="player">
+                <div class="playerName"></div>
+                <div class="status"></div>
+                <div class="playerScore"></div>
+
+            </div>
+            <div id="p3" class="player">
+                <div class="playerName"></div>
+                <div class="status"></div>
+                <div class="playerScore"></div>
+            </div>
+            <div id="p4" class="player">
+                <div class="playerName"></div>
+                <div class="status"></div>
+                <div class="playerScore"></div>
+            </div>
+        </div>
+        <div id="bottomContainer">
+            <div id="selected">Selected Number: None</div>
+            <button id="chooseNumberBtn">Choose Number</button>
+        </div>
+        <div id="popup">
+            <div>
+                <div id="gridContainer"></div>
+                <button id="closePopup">Close</button>
+            </div>
+        </div>
+        <h2 id="pickNumText">Start the round once all players are ready!</h2>
+        <div id="startRoundBtn">Start!</div>
+    </div>
+    
+    <script>
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyD0WlA_2IEzYwavt_Dtm6NUr_vu2kpuvaU",
+            authDomain: "kingofdiamonds-c5967.firebaseapp.com",
+            databaseURL: "https://kingofdiamonds-c5967-default-rtdb.firebaseio.com",
+            projectId: "kingofdiamonds-c5967",
+            storageBucket: "kingofdiamonds-c5967.appspot.com",
+            messagingSenderId: "872745210340",
+            appId: "1:872745210340:web:be3f6bf228dcac81c9f7f1",
+            measurementId: "G-LMNG7S6E6H"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const startRoundBtn = document.getElementById('startRoundBtn');
+        const joinScreen = document.getElementById('joinScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const joinBtn = document.getElementById('joinBtn');
+        const popup = document.getElementById('popup');
+        const gridContainer = document.getElementById('gridContainer');
+        const selectedDiv = document.getElementById('selected');
+        const chooseNumberBtn = document.getElementById('chooseNumberBtn');
+        const closeBtn = document.getElementById('closePopup');
+
+        chooseNumberBtn.addEventListener('click', () => {
+            popup.style.display = 'flex';
+        });
+
+        // Assigning Player ID's once logged on
+        let myPlayerID = null;
+        let myName = null;
+        let moves = {};
+
+        let playerTags = {};
+        joinBtn.addEventListener('click', () => {
+            myName = document.getElementById("playerNameInput").value.trim();
+            if (!myName) {
+                alert("Please enter your name");
+                return;
+            }
+            db.ref("players").once("value").then(snapshot => {
+                let players = snapshot.val() || {};
+                let playerCount = Object.keys(players).length;
+                if (playerCount >= 4) {
+                    alert("Game full (four players maximum)");
+                    return;
+                }
+
+                for (let i = 1; i <= 4; i++) {
+                    if (!players[`p${i}`]) {
+                        myPlayerID = `p${i}`;
+                        playerTags[myPlayerID] = myName;
+                        db.ref("players/" + myPlayerID).set({ name: myName, joined: true});
+                        db.ref("players/" + myPlayerID).onDisconnect().remove();
+                        db.ref("moves/" + myPlayerID).set({name: myName, move: -1});
+                        db.ref("moves/" + myPlayerID).onDisconnect().remove();
+                        db.ref("scores/" + myName).onDisconnect().remove();
+                        break;
+                    }
+                }
+                joinScreen.style.display = "none";
+                gameScreen.style.display = "block";
+            })
+        })
+
+        let chosenCount = 0;
+        let timerInterval = null;
+        let scoringDone = false;
+        let currMoves = {};
+        // let globalAvg = 0;
+
+        startRoundBtn.addEventListener('click', () => {
+            if (myPlayerID) {
+                startNewRound();
+            }
+        }); 
+
+        function appendMessage(msg) {
+            const line = document.createElement("div");
+            line.textContent = msg;
+            countdownTimer.appendChild(line);
+        }
+
+        // Clear old messages when starting a new round
+        function clearMessages() {
+            countdownTimer.innerHTML = "";
+        }
+
+
+        function startNewRound() {
+            db.ref("game/roundStartTime").set(firebase.database.ServerValue.TIMESTAMP);
+        }
+
+        let gameOver = false;
+        let gameWinner = "";
+
+        db.ref("game/roundStartTime").on("value", snapshot => {
+            gameOver = false;
+            pickNumText.style.display = 'none';
+            startRoundBtn.style.display = "none";
+            const startTime = snapshot.val();
+            if (!startTime) {
+                countdownTimer.textContent = "";
+                chooseNumberBtn.style.display = "none";
+                return;
+            }
+            const TEST_SPEED = 1;
+            const chooseDuration = 15000 * TEST_SPEED;
+            const breakDuration = 26000 * TEST_SPEED;
+            const timesUpDuration = 18000 * TEST_SPEED;
+            const player1Duration = 20000 * TEST_SPEED;
+            const player2Duration = 22000 * TEST_SPEED;
+            const player3Duration = 24000 * TEST_SPEED;
+            const player4Duration = 26000 * TEST_SPEED;
+            const avgDuration = 29000 * TEST_SPEED;
+            const multDuration = 32000 * TEST_SPEED;
+            const closestPlayerDuration = 37000 * TEST_SPEED;
+            const newRoundBreakDuration = 41000 * TEST_SPEED;
+            let revealed = {
+                timesUp: false,
+                p1: false,
+                p2: false,
+                p3: false,
+                p4: false,
+                avg: false,
+                result: false,
+                winner: false
+            };
+
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const now = Date.now();
+                const elapsed = now - startTime;
+                if (elapsed < chooseDuration) {
+                    countdownTimer.style.display = "block";
+                    countdownTimer.textContent = Math.ceil((chooseDuration - elapsed) / 1000);
+                    chooseNumberBtn.style.display = (!eliminated.includes(playerTags[myPlayerID])) ? "block" : "none";
+                    startRoundBtn.style.display = "none";
+                }
+                else if (elapsed < chooseDuration + breakDuration) {
+                    // break phase;
+                    let count = 0;
+                    let sum = 0;
+                    Object.keys(currMoves).forEach(name => {
+                        if (currMoves[name] !== -1) {
+                            sum += currMoves[name];
+                            count++;
+                        }
+                    });
+                    let avg = (count > 0) ? (sum / count) : 0;
+                    if (elapsed < timesUpDuration) {
+                        if (!revealed.timesUp) {
+                            clearMessages();
+                            appendMessage("Time's up!");
+                            chooseNumberBtn.style.display = 'none';
+                            revealed.timesUp = true;
+                        }
+                    } else if (elapsed < player1Duration) {
+                        if (eliminated.includes(playerTags["p1"])) {      // ensure that eliminated players dont show up in the round announcements
+                            elapsed = player1Duration;
+                        }
+                        else if (!revealed.p1) {
+                            clearMessages();
+                            if (moves["p1"] === -1) appendMessage(`${playerTags["p1"]} did not make a choice.`);
+                            else appendMessage(`${playerTags["p1"]} chose ${moves["p1"]}`);
+                            revealed.p1 = true;
+                        }
+                    } else if (elapsed < player2Duration) {
+                        if (eliminated.includes(playerTags["p2"])) {
+                            elapsed = player2Duration;
+                        }
+                        else if (!revealed.p2) {
+                            if (moves["p2"] === -1) appendMessage(`${playerTags["p2"]} did not make a choice.`);
+                            else appendMessage(`${playerTags["p2"]} chose ${moves["p2"]}`);
+                            revealed.p2 = true;
+                        }
+                    } else if (elapsed < player3Duration) {
+                        if (eliminated.includes(playerTags["p3"])) {
+                            elapsed = player3Duration;
+                        }
+                        else if (!revealed.p3) {
+                            if (moves["p3"] === -1) appendMessage(`${playerTags["p3"]} did not make a choice.`);
+                            else appendMessage(`${playerTags["p3"]} chose ${moves["p3"]}`);
+                            revealed.p3 = true;
+                        }
+                    } else if (elapsed < player4Duration) {
+                        if (eliminated.includes(playerTags["p4"])) {
+                            elapsed = player4Duration;
+                        }
+                        else if (!revealed.p4) {
+                            if (moves["p4"] === -1) appendMessage(`${playerTags["p4"]} did not make a choice.`);
+                            else appendMessage(`${playerTags["p4"]} chose ${moves["p4"]}`);
+                            revealed.p4 = true;
+                        }
+                    } else if (elapsed < avgDuration) {
+                        if (!revealed.avg) { 
+                            appendMessage(`The average was: ${avg.toFixed(2)}`);
+                            revealed.avg = true;
+                        }
+                    } else if (elapsed < multDuration) {
+                        if (!revealed.result) {
+                            clearMessages();
+                            let ans = (avg * 0.8).toFixed(2);
+                            appendMessage(`The result is ${avg.toFixed(2)} * 0.8 = ${ans}`);
+                            revealed.result = true;
+                        }
+
+                    } else if (elapsed < closestPlayerDuration) {
+                        if (!revealed.winner) {
+                            if (!scoringDone) {
+                                scoringDone = true;
+                                playGame().then(Roundwinner => {
+                                    if (Roundwinner === "" || Roundwinner === null) appendMessage("So we all want to die huh?");
+                                    else {
+                                        appendMessage(`The player closest to the result was ${Roundwinner}`);
+                                        gameWinner = Roundwinner;
+                                    }
+                                });
+                            }                    
+                            revealed.winner = true;
+                        }
+                    }
+                    // Compute winner only once
+                    else if (elapsed < newRoundBreakDuration) {
+                        if (gameOver) {
+                            clearInterval(timerInterval);
+                            countdownTimer.textContent = (`Congratulations ${gameWinner}, you have defeated the King of Diamonds`);
+                            return;
+                        }
+                        countdownTimer.textContent = "New round begins in " + Math.ceil((chooseDuration + breakDuration - elapsed) / 1000);
+                        // resets the status
+                        const myDiv = document.getElementById(myPlayerID);
+                        const statusDiv = myDiv.querySelector(".status");
+                        if (statusDiv) {
+                            db.ref("moves/" + myPlayerID).set({name: myName, move: -1}); // firebasely  : status
+                            statusDiv.textContent = "Choosing...";    // locally   : status
+                            selectedDiv.textContent = "Number Selected: None";    // locally : num selected.
+                            if (prevcell) prevcell.classList.remove('clicked');
+                        }
+                        scoringDone = false;
+                        revealed.winner = false;
+                    }                    
+                }
+                else {
+                    // starting next round
+                    clearInterval(timerInterval);
+                    scoringDone = false;
+                    startNewRound();
+                }
+            }, 250);
+        });
+
+        let number = 0;
+        let prevcell = null;
+
+        // const p1 = document.getElementById("p1");
+
+        // // Show X
+        // p1.classList.add("eliminated");
+        
+        for (let i = 0; i < 110; i++) {
+            const cell = document.createElement('div');
+            cell.classList.add('cell');
+
+            if (i < 9) {
+                cell.classList.add('black'); // first 9 are black fillers
+                cell.style.pointerEvents = "none"; // make them unclickable
+            } else {
+                cell.textContent = number;
+                cell.dataset.number = number;
+
+                cell.addEventListener('click', () => {
+                    if (prevcell) prevcell.classList.remove('clicked');    // gets rid of prevcell color. 
+                    prevcell = cell;
+                    cell.classList.add('clicked');
+                    selectedDiv.textContent = `Number Selected: ${cell.dataset.number}`;
+                    selectedDiv.dataset.number = cell.dataset.number;
+                    // Save locally
+                    moves[myPlayerID] = Number(cell.dataset.number);
+                    // Push to Firebase
+                    db.ref("moves/" + myPlayerID).set({name: myName, move: Number(cell.dataset.number)});
+                    db.ref("moves/" + myPlayerID).onDisconnect().remove();
+                    // Update local UI immediately
+                    const myDiv = document.getElementById(myPlayerID);
+                    const statusDiv = myDiv.querySelector(".status");
+                    if (statusDiv) statusDiv.textContent = "Has chosen!";
+                    popup.style.display = 'none';
+                });
+
+                number++;
+            }
+            gridContainer.appendChild(cell);
+        }
+
+        // Listen for changes in Firebase moves
+        db.ref("moves").on("value", snapshot => {
+            const movesData = snapshot.val() || {};
+            moves = {}; // reset local moves
+            // Build moves object: playerID -> number
+            Object.keys(movesData).forEach(playerID => {
+                moves[playerID] = movesData[playerID].move;
+            });
+            currMoves = moves;
+            // Update player statuses
+            Object.keys(playerTags).forEach(playerID => {
+                const playerDiv = document.getElementById(playerID);
+                if (!playerDiv) return;
+                const statusDiv = playerDiv.querySelector(".status");
+                if (!statusDiv) return;
+                if (moves[playerID] !== -1) {
+                    statusDiv.textContent = "Has chosen!";
+                } else {
+                    statusDiv.textContent = "Choosing...";
+                }
+            });
+        });
+
+        closeBtn.addEventListener('click', () => {
+            popup.style.display = 'none';
+        });
+
+        const KINGS_NUMBER = 0.8;
+        let scores = {};
+        let eliminated = [];
+
+        // Listen for eliminations
+        // Listen for eliminations
+        db.ref("eliminated").on("value", snapshot => {
+            let elimVal = snapshot.val();
+            if (Array.isArray(elimVal)) {
+                eliminated = elimVal;
+            } else if (elimVal && typeof elimVal === "object") {
+                eliminated = Object.keys(elimVal); // fallback if object
+            } else {
+                eliminated = [];
+            }
+            if (eliminated.length >= 3) gameOver = true;
+            eliminations.innerHTML = "<strong>Eliminations:</strong>";
+            if (eliminated.length > 0) {
+                eliminations.style.display = "block";
+                eliminated.forEach(playerName => {
+                    const line = document.createElement("div");
+                    line.textContent = playerName;
+                    eliminations.appendChild(line);
+                });
+            } else {
+                eliminations.style.display = "none";
+            }
+
+            // --- Update each player UI ---
+            Object.keys(playerTags).forEach(pid => {
+                const playerName = playerTags[pid];
+                const playerDiv = document.getElementById(pid);
+                const statusDiv = playerDiv.querySelector(".status");
+
+                if (eliminated.includes(playerName)) {
+                    playerDiv.classList.add("eliminated"); 
+                    if (statusDiv) statusDiv.textContent = "Eliminated.";
+                } else {
+                    playerDiv.classList.remove("eliminated");
+                }
+            });
+            if (eliminated.length > 0) {
+                const lastElim = eliminated[eliminated.length - 1];
+                announceElimination.textContent = `${lastElim} was just Eliminated`;
+                announceElimination.style.display = "block";
+
+                setTimeout(() => {
+                    announceElimination.style.display = "none";
+                }, 2000);
+            }
+        });
+
+        const missingList = document.getElementById("waitingForPlayers");
+        const OGpositions = [
+            { top: "20px", left: "50%", transform: "translateX(-50%)"},   // top center
+            { top: "44.6%", right: "40px" }, // right side
+            { top: "44.6%", left: "40px" }   // left side
+        ];
+
+        // Keep playerTags updated with all joined players
+        db.ref("players").on("value", snapshot => {
+            const players = snapshot.val() || {};
+            playerTags = {}; // reset
+
+            Object.keys(players).forEach(pid => {
+                playerTags[pid] = players[pid].name;
+            });
+
+            // Update player UI
+            Object.keys(playerTags).forEach(pid => {
+                const playerDiv = document.getElementById(pid);
+                if (!playerDiv) return;
+                const nameDiv = playerDiv.querySelector(".playerName");
+                if (nameDiv) nameDiv.textContent = playerTags[pid];
+            });
+        });
+
+        db.ref("players").on("value", snapshot => {
+            const players = snapshot.val() || {};
+            const playerCount = Object.keys(players).length;
+            let positions = OGpositions.slice();
+            for (let i = 1; i <= 4; i++) {
+                const playerID = `p${i}`;
+                const playerDiv = document.getElementById(`p${i}`);
+
+                if (players[playerID]) {
+                    const nameDiv = playerDiv.querySelector(".playerName");
+                    const statusDiv = playerDiv.querySelector(".status");
+                    const scoreDiv = playerDiv.querySelector(".playerScore");
+
+                    // Set player name
+                    if (nameDiv) nameDiv.textContent = players[playerID].name;
+
+                    // Initialize status and score if empty
+                    if (statusDiv) statusDiv.textContent = "Choosing...";
+                    if (scoreDiv) scoreDiv.textContent = "Score: " + (scores[players[playerID].name] || 0);
+
+                    playerDiv.style.visibility = "visible";
+
+                    if (playerID === myPlayerID) {
+                        playerDiv.style.bottom = "70px";
+                        playerDiv.style.left = "50%";  // centered
+                        playerDiv.style.transform = "translateX(-50%)";
+                    } else {
+                        const pos = positions.shift();
+                        playerDiv.style.bottom = pos.bottom || '';
+                        playerDiv.style.left = pos.left || '';
+                        playerDiv.style.right = pos.right || '';
+                        playerDiv.style.top = pos.top || '';
+                        playerDiv.style.transform = pos.transform || "";
+                    }
+                } else {
+                    playerDiv.style.visibility = "hidden";
+
+                    const nameDiv = playerDiv.querySelector(".playerName");
+                    if (nameDiv) nameDiv.textContent = "";
+
+                    const statusDiv = playerDiv.querySelector(".status");
+                    if (statusDiv) statusDiv.textContent = "";
+
+                    playerDiv.removeAttribute("style");
+                    delete playerTags[playerID];
+                }
+            }
+
+            // Waiting message
+            if (playerCount < 4) {
+                startRoundBtn.style.display = "none";
+                missingList.textContent = "Waiting for " + (4 - playerCount) + " more player(s)";
+                pickNumText.style.display = 'none';
+                chooseNumberBtn.style.display = 'none';
+                db.ref("game/roundStartTime").remove();
+            } else {  // if four playuers have all joined.
+                missingList.textContent = "";
+                pickNumText.style.display = 'block';
+                startRoundBtn.style.display = 'block';
+            }
+        });
+
+        function findWinner(playerMoves){
+            let total = 0;
+            const names = Object.keys(playerMoves);
+            //globalAvg = 0;
+            let count = 0;
+            names.forEach (name => {
+                if (playerMoves[name] !== -1) {
+                    total += playerMoves[name]
+                    count++;
+                }
+            });
+            if (count === 0) {
+                handleLosses(playerMoves, "");
+                return "";
+            }
+            // globalAvg = (total / count);
+            // globalAvg.toFixed(2);
+            const result = (total / count)  *  KINGS_NUMBER;
+
+            let minDiff = Infinity;
+            let winner = "";
+            names.forEach (name => {
+                if (playerMoves[name] !== -1) {
+                    const diff = Math.abs(playerMoves[name] - result);
+                    if (diff < minDiff) {minDiff = diff; winner = name;}
+                }
+            });
+            handleLosses(playerMoves, winner);
+            if (eliminated.length === 3 && !eliminated.includes(winner)){
+                const listWinner = document.createElement("p");
+                listWinner.style.display = 'block';
+                listWinner.textContent = "Congratulations " + winner + " you defeated the King of Diamonds!";
+                document.body.appendChild(listWinner);
+            }
+            return winner;
+        }
+
+        function handleLosses(playerMoves, winner) {
+            const names = Object.keys(playerMoves);
+            names.forEach(name => {
+                if (!(name in scores)) scores[name] = 0;
+                
+                if ((winner !== "" && name !== winner && !eliminated.includes(name)) || (playerMoves[name] === -1 && !eliminated.includes(name))) {
+                    scores[name] -= 1;
+                }
+                if (scores[name] <= -10 && !eliminated.includes(name)) {
+                    eliminated.push(name);
+                    db.ref("eliminated").set(eliminated); // store full updated list
+                }
+            });
+
+            db.ref('scores').set(scores);
+            updateScores();
+        }
+
+        function resetGame() {
+            // Reset local state
+            scores = {};
+            eliminated = [];
+
+            // Clear Firebase data
+            db.ref('scores').set({});
+            db.ref('eliminated').set([]);
+            db.ref('moves').set({});
+
+            // Reset UI elements
+            document.getElementById("winner").innerText = "";
+            document.getElementById("eliminations").innerHTML = "";
+            selectedDiv.textContent = "Selected Number: None";
+            db.ref("game/roundStartTime").remove();
+            // Reset player bubbles dynamically
+            if (playerTags) {
+                Object.keys(playerTags).forEach(tag => {
+                    const playerDiv = document.getElementById(tag);
+                    if (playerDiv) {
+                        let scoreDiv = playerDiv.querySelector(".playerScore");
+                        if (!scoreDiv) {
+                            scoreDiv = document.createElement("div");
+                            scoreDiv.classList.add("playerScore");
+                            playerDiv.appendChild(scoreDiv);
+                        }
+                        scoreDiv.textContent = "Score: 0";
+                    }
+                });
+            }
+        }
+
+       function playGame() {
+            return Promise.all([
+                db.ref("moves").once("value"),
+                db.ref("players").once("value")
+            ]).then(([movesSnap, playersSnap]) => {
+                const movesData = movesSnap.val() || {};
+                const players = playersSnap.val() || {};
+                
+                let playerMoves = {};
+                Object.keys(players).forEach(pid => {
+                    const pname = players[pid].name;
+                    playerMoves[pname] = movesData[pid].move;
+                });
+
+                return findWinner(playerMoves);
+            });
+        }
+
+        function updateScores() {
+            const tags = Object.keys(playerTags); 
+            tags.forEach(tag => {
+                const playerName = playerTags[tag];       // get player name
+                const playerDiv = document.getElementById(tag);   
+                if (!playerDiv) return;
+                
+                let scoreDiv = playerDiv.querySelector(".playerScore");
+                if (!scoreDiv) {
+                    scoreDiv = document.createElement("div");
+                    scoreDiv.classList.add("playerScore");
+                    playerDiv.appendChild(scoreDiv); 
+                }
+                scoreDiv.textContent = "Score: " + (scores[playerName] || 0);
+            });
+        }
+        
+
+    </script>
+</body>
+</html>

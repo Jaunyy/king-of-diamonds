@@ -1,0 +1,194 @@
+
+/*
+styles.css
+----------
+Used for styling.
+
+Responsibilities:
+    - Layout and styling for join screen, game screen, and popups
+    - Styles for player cards and elimination states
+    - Countdown timer, selected number display, and buttons
+    - Grid of selectable numbers for gameplay
+    - Responsive positioning and visual effects (e.g., clicked cells, eliminated players)
+
+Notes:
+    - Uses flexbox and absolute positioning for layout
+    - Colors and gradients are chosen for a dark-themed game interface
+    - The first 9 grid cells are black fillers and unclickable
+    - Eliminated players have a red X overlay and semi-transparent appearance
+*/
+body {
+    padding: 0;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    align-items: center;
+    background: linear-gradient(to bottom right, #2c3e50, #3498db);
+    color: white;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#bottomContainer {
+    position: absolute;
+    left: 50%;
+    bottom: 0px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#selected {
+    font-size: 1.2em;
+    position: absolute;
+    bottom: 150px;
+    color: white;
+    white-space: nowrap;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+h1 {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 3em;
+}
+
+#joinScreen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#popup {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+}
+
+#gridContainer {
+    background-color: rgb(0, 0, 0);
+    padding: 20px;
+    border-radius: 12px;
+    display: grid;
+    grid-template-columns: repeat(10, 50px);
+    grid-template-rows: repeat(11, 50px);
+    gap: 5px;
+}
+
+#waitingForPlayers {
+    position: absolute;
+    top: 300px;         /* distance from top */
+    left: 50%;         /* center horizontally */
+    transform: translateX(-50%); /* truly center */
+    font-size: 1.2em;
+    text-align: center;
+}
+
+#countdownTimer {
+    display: none;
+    top: 300px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    color: rgb(0, 0, 0);
+}
+
+.player {
+    position: absolute;
+    padding: 6px 20px; /* balanced space left/right */
+    border-radius: 20px;
+    text-align: center;
+    background: rgba(255,255,255,0.1);
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.player.eliminated {
+    background-image: url("https://images.vexels.com/media/users/3/340644/isolated/preview/e582116e90ff33f47a38ba20aaf82ecc-red-x-in-a-circle.png");
+    background-size: cover;
+    opacity: 0.5;
+    text-decoration: line-through;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+
+.cell.clicked { background: #add8e6; cursor: default; }
+#closePopup { margin-top: 10px; }
+
+h1 { text-align: center; margin-top: 20px; font-size: 3em; }
+#players { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+
+#chooseNumberBtn {
+    margin-bottom: 20px;
+    width: 700px;
+    padding: 10px 20px;
+    font-size: 1.2em;
+    border: none;
+    border-radius: 10px;
+    background: #554948;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#pickNumText {
+    display: none; 
+    margin-top: 300px; 
+}
+
+#startRoundBtn {
+    position: absolute;
+    bottom: 350px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 3em;
+    cursor: pointer;  
+    display: none; 
+    width: auto;
+    text-align: center;
+    background: #c0392b; 
+    padding: 20px;
+    border-radius: 20px;
+}
+
+#eliminations {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    justify-content: center;
+    background: rgba(255,0,0,0.2);
+    padding: 8px 12px;
+    border-radius: 6px;
+    max-width: 200px;
+    text-align: center;
+}
+
+#announceElimination {
+    position: absolute;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: none;
+}
