@@ -70,3 +70,4 @@ Players choose numbers in rounds to get as close as possible to a calculated tar
 <img width="1441" height="886" alt="image" src="https://github.com/user-attachments/assets/624a734f-b8ca-448a-b882-bf07453edb73" />
 
 - Round Results:
+<img width="938" height="863" alt="image" src="https://github.com/user-attachments/assets/9b75fcdf-1f56-46ce-92a4-d587e02a4d32" />
