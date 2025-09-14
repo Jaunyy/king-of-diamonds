@@ -38,8 +38,7 @@ Players choose numbers from 0 through 100 included per rounds to get as close as
 ---
 
 ## Planned Features
-
-- Full **elimination rules** (each eliminated player introduces a new twist)  
+  
 - Animations and visuals for immersive gameplay  
 - Mobile responsiveness and sound effects  
 
