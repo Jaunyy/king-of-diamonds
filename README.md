@@ -1,6 +1,5 @@
 # King of Diamonds - Multiplayer Web Game
 
-![King of Diamonds]
 <img width="1903" height="897" alt="image" src="https://github.com/user-attachments/assets/d244ee02-de63-42fc-b4fa-a4de743b7aff" />
 
 
