@@ -10,7 +10,7 @@ Adapted for **four players** so I could enjoy it with close friends.
 
 ## About the Game
 
-Players choose numbers in rounds to get as close as possible to a calculated target. Each round produces a winner and affects player scores.
+Players choose numbers from 0 - 100 per rounds to get as close as possible to a calculated target. Each round produces a winner and affects player scores.
 
 ### Rules (Simplified)
 
