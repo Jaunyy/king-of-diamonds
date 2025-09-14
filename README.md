@@ -1,6 +1,8 @@
 # King of Diamonds - Multiplayer Web Game
 
-![King of Diamonds](<img width="1902" height="900" alt="image" src="https://github.com/user-attachments/assets/d6c1f923-0d7e-43ba-90f8-aee352399cd1" />)
+![King of Diamonds]
+<img width="1903" height="897" alt="image" src="https://github.com/user-attachments/assets/d244ee02-de63-42fc-b4fa-a4de743b7aff" />
+
 
 A web-based multiplayer game inspired by **[Alice in Borderland](https://aliceinborderland.fandom.com/wiki/King_of_Diamonds)**, specifically the "King of Diamonds" game.  
 Adapted for **four players** so I could enjoy it with close friends.
