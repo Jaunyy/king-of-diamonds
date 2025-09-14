@@ -1,6 +1,6 @@
 # King of Diamonds - Multiplayer Web Game
 
-![King of Diamonds](path/to/cover-image.png) <!-- Replace with a cover image if you have one -->
+![King of Diamonds](<img width="1902" height="900" alt="image" src="https://github.com/user-attachments/assets/d6c1f923-0d7e-43ba-90f8-aee352399cd1" />)
 
 A web-based multiplayer game inspired by **[Alice in Borderland](https://aliceinborderland.fandom.com/wiki/King_of_Diamonds)**, specifically the "King of Diamonds" game.  
 Adapted for **four players** so I could enjoy it with close friends.
@@ -60,14 +60,15 @@ Players choose numbers in rounds to get as close as possible to a calculated tar
    git clone https://github.com/Jaunyy/king-of-diamonds.git
 
 ## Screenshots / Demo
-- Join Screen:
-<img width="1287" height="773" alt="image" src="https://github.com/user-attachments/assets/92afec71-2118-4211-b29c-78033b081ad4" />
+- Waiting for Screen:
+<img width="1898" height="898" alt="image" src="https://github.com/user-attachments/assets/89392d78-ed33-4af1-9cc5-c389c5693cab" />
 
 - Game Screen:
-<img width="1903" height="894" alt="image" src="https://github.com/user-attachments/assets/c6365212-f328-43b7-948e-a237d3baa2e0" />
+<img width="1906" height="899" alt="image" src="https://github.com/user-attachments/assets/52358f6d-a6e2-4b6f-bbfa-e5833ebb6efc" />
 
 - Number Selection:
-<img width="1441" height="886" alt="image" src="https://github.com/user-attachments/assets/624a734f-b8ca-448a-b882-bf07453edb73" />
+<img width="1499" height="904" alt="image" src="https://github.com/user-attachments/assets/171675d2-7db5-4096-b929-8a6c7eaa9562" />
 
 - Round Results:
-<img width="938" height="863" alt="image" src="https://github.com/user-attachments/assets/9b75fcdf-1f56-46ce-92a4-d587e02a4d32" />
+<img width="1893" height="900" alt="image" src="https://github.com/user-attachments/assets/988f378c-31a6-486b-b43e-263a6c14e616" />
+
